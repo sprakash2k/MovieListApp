@@ -21,8 +21,24 @@ function App() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const lastItemRef = useRef<HTMLDivElement | null>(null);
+  const [visibleItemCount, setVisibleItemCount] = useState<number>(0);
+  const [imageUrl, setImageUrl] = useState(
+    "https://test.create.diagnal.com/images/posterthatismissing.jpg"
+  );
 
-  // Function to toggle the visibility of the input field
+  const handleImageError = () => {
+    // Update the image URL to the placeholder URL when an error occurs
+    setImageUrl(
+      "https://test.create.diagnal.com/images/placeholder_for_missing_posters.png"
+    );
+  };
+
+  useEffect(() => {
+    setImageUrl(
+      "https://test.create.diagnal.com/images/placeholder_for_missing_posters.png"
+    );
+  }, []);
+
   const toggleInputVisibility = () => {
     setInputVisible((prevVisible) => !prevVisible);
   };
@@ -55,18 +71,17 @@ function App() {
     }
   };
 
-  // Function to load initial viewport items from page1.json
+  // load initial viewport items - page1.json
   const loadInitialData = () => {
     fetchJsonData("https://test.create.diagnal.com/data/page1.json");
     setCurrentPage((prevPage) => prevPage + 1);
   };
 
   useEffect(() => {
-    // Load initial viewport items on component mount
     loadInitialData();
   }, []);
 
-  // Function to handle scrolling and load more items
+  // handle scrolling and load more items
   const handleScroll = () => {
     if (
       lastItemRef.current &&
@@ -78,25 +93,30 @@ function App() {
         `https://test.create.diagnal.com/data/page${currentPage}.json`
       );
       setCurrentPage((prevPage) => prevPage + 1);
-      // You can adjust the number of pages to load here
       setHasMore(currentPage < 3);
     }
   };
 
   useEffect(() => {
-    // Attach the scroll event listener
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [currentPage, isLoading, hasMore]);
 
-  // Filter the items based on the search query
+  // Filtser the items
   const filteredItems = jsonData.page["content-items"].content.filter(
     (item: any) => item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // if "No results found" should be displayed
+  const clearSearchQuery = () => {
+    setSearchQuery("");
+  };
+  const clearIcon = searchQuery ? (
+    <img className="clearicon" onClick={clearSearchQuery} />
+  ) : null;
+
+  // No results found
   const noResultsFound = filteredItems.length === 0 && searchQuery.length > 0;
 
   // Render the JSON data
@@ -105,8 +125,13 @@ function App() {
       <nav className="navbar sticky-top">
         <div className=" grid-thirds container ">
           <div className="d-flex">
-            <div className="naviarrow"></div>
+            <div className="naviarrow" onClick={clearSearchQuery}></div>
             <h3>Romantic Comedy</h3>
+          </div>
+
+          <div className="items-loaded">
+            #{""}
+            {jsonData.page["content-items"].content.length}
           </div>
 
           <div className="search-bar">
@@ -117,19 +142,23 @@ function App() {
               alt="Search Icon"
             ></img>
             {isInputVisible && (
-              <input
-                className="searchinput"
-                type="text"
-                placeholder="Search movies..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <div className="search-input-container">
+                <input
+                  type="text"
+                  required
+                  className="search-box searchinput"
+                  placeholder="Search movies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <span className="close-icon" onClick={clearSearchQuery}></span>
+              </div>
             )}
           </div>
         </div>
       </nav>
 
-      <div className="container mt-5">
+      <div className="container-fluid mt-5">
         <h2>{jsonData.page.title}</h2>
         <div className="row p-cont">
           {filteredItems.map((item: any, index: number) => (
@@ -141,13 +170,13 @@ function App() {
                 />
               ) : (
                 <img
-                  src="https://test.create.diagnal.com/images/placeholder_for_missing_posters.png"
-                  alt="Image is not loaded"
+                  src={imageUrl}
+                  alt="Movie Poster"
+                  onError={handleImageError}
                 />
               )}
               <h4 className="mt-3">{item.name}</h4>
-
-              {/* Check if it's the last item and set the ref */}
+              {}
               {index === filteredItems.length - 1 && (
                 <div ref={lastItemRef}></div>
               )}
