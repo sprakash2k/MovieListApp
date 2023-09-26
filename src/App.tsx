@@ -1,6 +1,6 @@
 import "./App.css";
 import "../node_modules/bootstrap/dist/css/bootstrap.css";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, SyntheticEvent } from "react";
 
 interface JsonDataState {
   page: {
@@ -22,15 +22,23 @@ function App() {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const lastItemRef = useRef<HTMLDivElement | null>(null);
   const [visibleItemCount, setVisibleItemCount] = useState<number>(0);
-  const [imageUrl, setImageUrl] = useState(
+
+  const [imageUrl, setImageUrl] = useState<string>(
     "https://test.create.diagnal.com/images/posterthatismissing.jpg"
   );
-
-  const handleImageError = () => {
-    // Update the image URL to the placeholder URL when an error occurs
-    setImageUrl(
-      "https://test.create.diagnal.com/images/placeholder_for_missing_posters.png"
-    );
+  const [altText, setAltText] = useState<string>("Fallback Image");
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const oldSrc = event.currentTarget.src;
+    const newSrc =
+      "https://test.create.diagnal.com/images/placeholder_for_missing_posters.png";
+    if (
+      oldSrc.includes(
+        "https://test.create.diagnal.com/images/posterthatismissing.jpg"
+      )
+    ) {
+      event.currentTarget.src = newSrc;
+    }
   };
 
   useEffect(() => {
@@ -43,7 +51,6 @@ function App() {
     setInputVisible((prevVisible) => !prevVisible);
   };
 
-  // Function to fetch JSON data
   const fetchJsonData = async (url: string) => {
     try {
       setIsLoading(true);
@@ -71,9 +78,10 @@ function App() {
     }
   };
 
-  // load initial viewport items - page1.json
   const loadInitialData = () => {
-    fetchJsonData("https://test.create.diagnal.com/data/page1.json");
+    fetchJsonData(
+      `https://test.create.diagnal.com/data/page${currentPage}.json`
+    );
     setCurrentPage((prevPage) => prevPage + 1);
   };
 
@@ -81,7 +89,6 @@ function App() {
     loadInitialData();
   }, []);
 
-  // handle scrolling and load more items
   const handleScroll = () => {
     if (
       lastItemRef.current &&
@@ -104,7 +111,6 @@ function App() {
     };
   }, [currentPage, isLoading, hasMore]);
 
-  // Filtser the items
   const filteredItems = jsonData.page["content-items"].content.filter(
     (item: any) => item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -112,82 +118,73 @@ function App() {
   const clearSearchQuery = () => {
     setSearchQuery("");
   };
+
   const clearIcon = searchQuery ? (
     <img className="clearicon" onClick={clearSearchQuery} />
   ) : null;
 
-  // No results found
   const noResultsFound = filteredItems.length === 0 && searchQuery.length > 0;
 
-  // Render the JSON data
   return (
     <>
-      <nav className="navbar sticky-top">
-        <div className=" grid-thirds container ">
-          <div className="d-flex">
-            <div className="naviarrow" onClick={clearSearchQuery}></div>
-            <h3>Romantic Comedy</h3>
-          </div>
+      <div className="diagnal">
+        <nav className="navbar sticky-top">
+          <div className="container d-flex">
+            <div className="d-flex">
+              <div className="naviarrow" onClick={clearSearchQuery}></div>
+              <h3>Romantic Comedy</h3>
+            </div>
 
-          <div className="items-loaded">
-            #{""}
-            {jsonData.page["content-items"].content.length}
+            <div className="search-bar">
+              <div className="searchicon" onClick={toggleInputVisibility} />
+              {isInputVisible && (
+                <div className="search-input-container">
+                  <input
+                    type="text"
+                    required
+                    className="search-box searchinput"
+                    placeholder="Search movies..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <span
+                    className="close-icon"
+                    onClick={clearSearchQuery}
+                  ></span>
+                </div>
+              )}
+            </div>
           </div>
+        </nav>
 
-          <div className="search-bar">
-            <img
-              className="searchicon"
-              onClick={toggleInputVisibility}
-              src="https://test.create.diagnal.com/images/search.png"
-              alt="Search Icon"
-            ></img>
-            {isInputVisible && (
-              <div className="search-input-container">
-                <input
-                  type="text"
-                  required
-                  className="search-box searchinput"
-                  placeholder="Search movies..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <span className="close-icon" onClick={clearSearchQuery}></span>
-              </div>
-            )}
-          </div>
+        <div className="items-loaded">
+          #{jsonData.page["content-items"].content.length}
         </div>
-      </nav>
 
-      <div className="container-fluid mt-5">
-        <h2>{jsonData.page.title}</h2>
-        <div className="row p-cont">
-          {filteredItems.map((item: any, index: number) => (
-            <div className="col-sm-4 contnt" key={index}>
-              {item["poster-image"] ? (
+        <div className="container-fluid mt-2">
+          <h2>{jsonData.page.title}</h2>
+          <div className="row p-cont">
+            {filteredItems.map((item: any, index: number) => (
+              <div className="col-sm-4 contnt" key={index}>
                 <img
                   src={`https://test.create.diagnal.com/images/${item["poster-image"]}`}
                   alt={item.name}
-                />
-              ) : (
-                <img
-                  src={imageUrl}
-                  alt="Movie Poster"
                   onError={handleImageError}
+                  className="missing-img"
                 />
-              )}
-              <h4 className="mt-3">{item.name}</h4>
-              {}
-              {index === filteredItems.length - 1 && (
-                <div ref={lastItemRef}></div>
-              )}
-            </div>
-          ))}
-        </div>
+                <h4 className="mt-3">{item.name}</h4>
+                {index === filteredItems.length - 1 && (
+                  <div ref={lastItemRef}></div>
+                )}
+              </div>
+            ))}
+          </div>
 
-        <div className="results">
-          {noResultsFound && <p>No results found</p>}
+          <div className="results">
+            {noResultsFound && <p>No results found</p>}
+          </div>
+          {isLoading && <p className="contnt">Loading...</p>}
         </div>
-        {isLoading && <p className="contnt">Loading...</p>}
       </div>
     </>
   );
