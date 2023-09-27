@@ -1,6 +1,6 @@
 import "./App.css";
 import "../node_modules/bootstrap/dist/css/bootstrap.css";
-import React, { useState, useEffect, useRef, SyntheticEvent } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface JsonDataState {
   page: {
@@ -21,13 +21,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const lastItemRef = useRef<HTMLDivElement | null>(null);
-  const [visibleItemCount, setVisibleItemCount] = useState<number>(0);
-
-  const [imageUrl, setImageUrl] = useState<string>(
-    "https://test.create.diagnal.com/images/posterthatismissing.jpg"
-  );
-  const [altText, setAltText] = useState<string>("Fallback Image");
-  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [scrollToTopVisible, setScrollToTopVisible] = useState(false);
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const oldSrc = event.currentTarget.src;
     const newSrc =
@@ -41,10 +35,26 @@ function App() {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const handleScrollToTopVisibility = () => {
+    if (window.scrollY > 100) {
+      setScrollToTopVisible(true);
+    } else {
+      setScrollToTopVisible(false);
+    }
+  };
+
   useEffect(() => {
-    setImageUrl(
-      "https://test.create.diagnal.com/images/placeholder_for_missing_posters.png"
-    );
+    window.addEventListener("scroll", handleScrollToTopVisibility);
+    return () => {
+      window.removeEventListener("scroll", handleScrollToTopVisibility);
+    };
   }, []);
 
   const toggleInputVisibility = () => {
@@ -119,17 +129,13 @@ function App() {
     setSearchQuery("");
   };
 
-  const clearIcon = searchQuery ? (
-    <img className="clearicon" onClick={clearSearchQuery} />
-  ) : null;
-
   const noResultsFound = filteredItems.length === 0 && searchQuery.length > 0;
 
   return (
     <>
       <div className="diagnal">
         <nav className="navbar sticky-top">
-          <div className="container d-flex">
+          <div className="container-fluid d-flex">
             <div className="d-flex">
               <div className="naviarrow" onClick={clearSearchQuery}></div>
               <h3>Romantic Comedy</h3>
@@ -157,7 +163,11 @@ function App() {
           </div>
         </nav>
 
-        <div className="items-loaded">
+        <div
+          className="items-loaded"
+          onClick={scrollToTop}
+          title="Scroll to Top"
+        >
           #{jsonData.page["content-items"].content.length}
         </div>
 
@@ -165,7 +175,7 @@ function App() {
           <h2>{jsonData.page.title}</h2>
           <div className="row p-cont">
             {filteredItems.map((item: any, index: number) => (
-              <div className="col-sm-4 contnt" key={index}>
+              <div className="col-sm-4 content" key={index}>
                 <img
                   src={`https://test.create.diagnal.com/images/${item["poster-image"]}`}
                   alt={item.name}

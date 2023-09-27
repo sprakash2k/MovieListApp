@@ -1,17 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200&display=swap");
 
-.App {
-  text-align: center;
-}
-
-html {
-  overflow-x: hidden;
-  width: 100%;
-  font-family: "Titillium Web";
-  background-color: #171717;
-  color: #ffffff;
-}
-
 .diagnal h3 {
   font-weight: normal;
 }
@@ -41,7 +29,7 @@ html {
   margin-right: 15px;
 }
 
-.contnt {
+.content {
   font-family: "Titillium Web";
   color: #ffffff;
   font-weight: 200;
@@ -68,6 +56,7 @@ html {
   border-radius: 30%;
   bottom: 5%;
   padding: 14px;
+  cursor: pointer;
 }
 
 .search-bar {
@@ -97,8 +86,8 @@ html {
 }
 
 .missing-img {
-  width: 182px;
-  height: 272px;
+  width: 100%;
+  aspect-ratio: 2/3;
 }
 
 .close-icon {
@@ -133,11 +122,6 @@ html {
 
 .search-box:not(:valid) ~ .close-icon {
   display: none;
-}
-
-.p-cont {
-  padding: 0 6%;
-  text-align: center;
 }
 
 @media (min-width: 576px) {

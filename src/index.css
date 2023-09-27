@@ -1,8 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200&display=swap");
 
+html {
+  overflow: scroll;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar {
+  width: 0;
+  background:
+}
+
 body {
   margin: 0;
   font-family: "Titillium Web";
   background-color: #171717 !important;
   color: #ffffff;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
