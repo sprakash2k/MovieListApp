@@ -135,31 +135,28 @@ function App() {
     <>
       <div className="diagnal">
         <nav className="navbar sticky-top">
-          <div className="container-fluid d-flex">
+          <div className="container-fluid">
             <div className="d-flex">
               <div className="naviarrow" onClick={clearSearchQuery}></div>
               <h3>Romantic Comedy</h3>
-            </div>
-
-            <div className="search-bar">
               <div className="searchicon" onClick={toggleInputVisibility} />
-              {isInputVisible && (
-                <div className="search-input-container">
-                  <input
-                    type="text"
-                    required
-                    className="search-box searchinput"
-                    placeholder="Search movies..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <span
-                    className="close-icon"
-                    onClick={clearSearchQuery}
-                  ></span>
-                </div>
-              )}
             </div>
+          </div>
+
+          <div className="search-bar">
+            {isInputVisible && (
+              <div className="search-input-container">
+                <input
+                  type="text"
+                  required
+                  className="search-box searchinput"
+                  placeholder="Search movies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <span className="close-icon" onClick={clearSearchQuery}></span>
+              </div>
+            )}
           </div>
         </nav>
 
@@ -182,7 +179,7 @@ function App() {
                   onError={handleImageError}
                   className="missing-img"
                 />
-                <h4 className="mt-3">{item.name}</h4>
+                <h4 className="mt-3 txt-ellipsis">{item.name}</h4>
                 {index === filteredItems.length - 1 && (
                   <div ref={lastItemRef}></div>
                 )}
